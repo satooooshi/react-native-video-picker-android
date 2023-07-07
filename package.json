@@ -1,7 +1,7 @@
 {
   "name": "react-native-video-picker-android",
   "version": "0.1.0",
-  "description": "Android video picker with support for configurable compression",
+  "description": "Android video picker. Select single or multiple videos with support for compression",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",

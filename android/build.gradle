@@ -75,6 +75,9 @@ dependencies {
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"
+  implementation "androidx.media3:media3-transformer:1.0.2"
+  implementation "androidx.media3:media3-effect:1.0.2"
+  implementation "androidx.media3:media3-common:1.0.2"
 }
 
 if (isNewArchitectureEnabled()) {
