@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text, Button } from 'react-native';
-import { multiply, pickVideo, clean } from 'react-native-video-picker-android';
+import { pickVideo } from 'react-native-video-picker-android';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
