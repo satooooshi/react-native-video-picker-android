@@ -1,13 +1,7 @@
 import * as React from 'react';
 
-import {
-  StyleSheet,
-  View,
-  Text,
-  Button,
-  NativeEventEmitter,
-} from 'react-native';
-import { multiply, pickVideo } from 'react-native-video-picker-android';
+import { StyleSheet, View, Text, Button } from 'react-native';
+import { multiply, pickVideo, clean } from 'react-native-video-picker-android';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
@@ -21,21 +15,26 @@ export default function App() {
       <Button
         title="choose video"
         onPress={async () => {
-          let ans = 0;
-          await multiply(3, new Date().getTime()).then((res) => {
-            console.log(res);
-            ans = res;
-          });
-          const uris = await pickVideo({
-            maxFiles: 10,
-            compress: true,
-            multiple: false,
-            onProgress: (progress) => {
-              console.log(progress);
-              setResult(progress);
-            },
-          });
-          console.log('---- CalendarModule.pickVideo() ', uris);
+          // await multiply(3, new Date().getTime()).then((res) => {
+          //   console.log(res);
+          // });
+
+          try {
+            // const aa = await clean();
+            // console.log(aa);
+            const uris = await pickVideo({
+              maxFiles: 10,
+              compress: true,
+              multiple: false,
+              onProgress: (progress) => {
+                console.log(progress);
+                setResult(progress);
+              },
+            });
+            console.log('---- pickVideo() success ', uris);
+          } catch (err) {
+            console.log('---- pickVideo() error ', err, (err as any)?.code);
+          }
         }}
       />
       <Text style={styles.box}>{result ? `Progress: ${result} %...` : ''}</Text>
