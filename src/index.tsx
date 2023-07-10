@@ -41,7 +41,7 @@ export async function pickVideo(
     maxFiles?: number;
     onProgress?: (progress: number) => void;
   } = { compress: false, multiple: false, maxFiles: 0, onProgress: undefined }
-): Promise<number> {
+): Promise<string[]> {
   let subscription: NativeEventSubscription;
   try {
     if (options?.onProgress) {

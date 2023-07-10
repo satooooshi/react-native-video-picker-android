@@ -1,21 +1,26 @@
 # react-native-video-picker-android
 
-Android video picker with support for configurable compression
+A React Native package that allows you to select single or multiple videos from Android device library with support for compression. A common use case is to compress videos and optimize the file size before uploading them to the server.
 
 ## Installation
 
 ```sh
 npm install react-native-video-picker-android
+yarn add react-native-video-picker-android
 ```
 
 ## Usage
 
-```js
-import { multiply } from 'react-native-video-picker-android';
-
-// ...
-
-const result = await multiply(3, 7);
+```ts
+const { pickVideo } = require('react-native-video-picker-android');
+const uris: string[] = await pickVideo({
+  maxFiles: 1,
+  compress: true,
+  multiple: false,
+  onProgress: (progress: number) => {
+    setProgCompressAndroid(progress);
+  },
+});
 ```
 
 ## Contributing

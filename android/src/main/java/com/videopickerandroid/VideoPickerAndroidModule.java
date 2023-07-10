@@ -391,7 +391,15 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
                 }
               })
             .build();
-        MediaItem inputMediaItem = MediaItem.fromUri(inputFileUri);
+           MediaItem inputMediaItem =
+                      new MediaItem.Builder()
+                       .setUri(inputFileUri)
+                       .setClippingConfiguration(
+                              new MediaItem.ClippingConfiguration.Builder()
+                              .setStartPositionMs(0)
+                              .setEndPositionMs(300_000)
+                              .build())
+                       .build();
         transformer.startTransformation(inputMediaItem, externalCacheFilePath);
         this.transformer = transformer;
 
