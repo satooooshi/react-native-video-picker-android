@@ -7,9 +7,11 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
+import android.provider.OpenableColumns;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -101,10 +103,13 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
 
   private static final int IMAGE_PICKER_REQUEST = 1;
   private static final String E_ACTIVITY_DOES_NOT_EXIST = "E_ACTIVITY_DOES_NOT_EXIST";
-  private static final String E_PICKER_CANCELLED = "E_PICKER_CANCELLED";
+  private static final String E_CALLBACK_ERROR = "E_CALLBACK_ERROR";
+  private static final String E_NO_LIBRARY_PERMISSION = "E_NO_LIBRARY_PERMISSION";
   private static final String E_FAILED_TO_SHOW_PICKER = "E_FAILED_TO_SHOW_PICKER";
   private static final String E_NO_IMAGE_DATA_FOUND = "E_NO_IMAGE_DATA_FOUND";
   private static final String E_ERROR_WHILE_CLEANING_FILES = "E_ERROR_WHILE_CLEANING_FILES";
+  private static final String E_VIDEO_SIZE_TOO_BIG = "E_VIDEO_SIZE_TOO_BIG";
+  private static final String E_COMPRESS_CANCELLED = "E_COMPRESS_CANCELLED";
 
   private Promise mPickerPromise;
 
@@ -118,6 +123,7 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
   private boolean multiple;
   private boolean compress;
   private int maxFiles;
+  private int maxFileSize;
   private ReadableMap options;
 
   public VideoPickerAndroidModule(ReactApplicationContext reactContext) {
@@ -156,6 +162,20 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
                 Uri uri = intent.getData();
                 inputUris.add(uri);
               }
+              if ( maxFileSize > 0 ) {
+                for (int i = 0; i < inputUris.size(); i++) {
+                  Uri returnUri = inputUris.get(i);
+                  Cursor returnCursor =
+                    getReactApplicationContext().getContentResolver().query(returnUri, null, null, null, null);
+                  int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                  int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+                  returnCursor.moveToFirst();
+                  Log.d(TAG, "--- nameIndex: " + returnCursor.getString(nameIndex)+", sizeIndex: "+Long.toString(returnCursor.getLong(sizeIndex)) );
+                  if ( returnCursor.getLong(sizeIndex) > maxFileSize) {
+                    mPickerPromise.reject(E_VIDEO_SIZE_TOO_BIG, "Selected video size too big. " + " nameIndex: " + returnCursor.getString(nameIndex)+", sizeIndex: "+Long.toString(returnCursor.getLong(sizeIndex)));
+                  }
+                }
+              }
               if(compress){
                 startTransformation(inputUris);
               }else{
@@ -185,6 +205,7 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
       compress = options.hasKey("compress") ? options.getBoolean("compress"):false;
       multiple = options.hasKey("multiple") ? options.getBoolean("multiple"):false;
       maxFiles = options.hasKey("maxFiles") ? options.getInt("maxFiles") : 0;
+      maxFileSize = options.hasKey("maxFileSize") ? options.getInt("maxFileSize") : 0;
       this.options = options;
   }
 
@@ -223,10 +244,10 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
 
                         if (grantResult == PackageManager.PERMISSION_DENIED) {
                             if (permission.equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                                promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "E_NO_PERMISSION");
+                                promise.reject(E_NO_LIBRARY_PERMISSION, "E_NO_PERMISSION");
                             } else {
                                 // should not happen, we fallback on E_NO_LIBRARY_PERMISSION_KEY rejection for minimal consistency
-                                promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "E_NO_PERMISSION");
+                                promise.reject(E_NO_LIBRARY_PERMISSION, "E_NO_PERMISSION");
                             }
                             return true;
                         }
@@ -294,6 +315,14 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
           // ex.printStackTrace();
           // promise.reject(E_ERROR_WHILE_CLEANING_FILES, ex.getMessage());
           promise.resolve(null);// on [Error: File does not exist]
+      }
+  }
+
+  @ReactMethod
+  public void cancel(final Promise promise) {
+      if ( transformer != null ) {
+        transformer.cancel();
+        promise.resolve(null);
       }
   }
 

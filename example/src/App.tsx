@@ -13,6 +13,7 @@ export default function App() {
           try {
             const uris = await pickVideo({
               maxFiles: 10,
+              maxFileSize: 700 * 1000000,
               compress: true,
               multiple: false,
               onProgress: (progress) => {
