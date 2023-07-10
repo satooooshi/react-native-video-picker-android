@@ -40,8 +40,11 @@
   },
   "keywords": [
     "react-native",
-    "ios",
-    "android"
+    "android",
+    "video",
+    "compression",
+    "picker",
+    "react-native-video-picker-android"
   ],
   "repository": "https://github.com/satooooshi/react-native-video-picker-android",
   "author": "AIKAWA Satoshi <saikawa3456@gmail.com> (https://github.com/satooooshi)",
