@@ -181,13 +181,6 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
       return NAME;
     }
 
-    // Example method
-    // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod
-    public void multiply(double a, double b, Promise promise) {
-      promise.resolve(a * b);
-    }
-
     private void setConfiguration(final ReadableMap options) {
       compress = options.hasKey("compress") ? options.getBoolean("compress"):false;
       multiple = options.hasKey("multiple") ? options.getBoolean("multiple"):false;
@@ -283,24 +276,25 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
           promise.reject(E_ACTIVITY_DOES_NOT_EXIST, "Activity doesn't exist");
           return;
       }
-
       permissionsCheck(activity, promise, Collections.singletonList(Manifest.permission.WRITE_EXTERNAL_STORAGE), new Callable<Void>() {
           @Override
           public Void call() {
-              try {
-                String tmpDir = activity.getCacheDir()+ "/"  + TAG;
-                  File file = new File(tmpDir);
-                  if (!file.exists()) throw new Exception("File does not exist");
-                Log.d(TAG, "--- clean(final Promise promise): path:" + file.getAbsolutePath());
-                  module.deleteRecursive(file);
-                  promise.resolve(null);
-              } catch (Exception ex) {
-                  ex.printStackTrace();
-                  promise.reject(E_ERROR_WHILE_CLEANING_FILES, ex.getMessage());
-              }
               return null;
           }
       });
+
+      try {
+        String tmpDir = activity.getCacheDir()+ "/"  + TAG;
+          File file = new File(tmpDir);
+          if (!file.exists()) throw new Exception("File does not exist");
+          Log.d(TAG, "--- clean tmpDir: " + tmpDir + ", path: " + file.getAbsolutePath());
+          module.deleteRecursive(file);
+          promise.resolve(null);
+      } catch (Exception ex) {
+          // ex.printStackTrace();
+          // promise.reject(E_ERROR_WHILE_CLEANING_FILES, ex.getMessage());
+          promise.resolve(null);// on [Error: File does not exist]
+      }
   }
 
     @ReactMethod
@@ -416,7 +410,7 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
             if (transformer != null
               && transformer.getProgress(progressHolder)
               != Transformer.PROGRESS_STATE_NO_TRANSFORMATION) {
-              Log.d(TAG, "--- アップロード中 ( "+String.valueOf(progressHolder.progress)+" % )"+" / Total: ( "+String.valueOf(progressTotal+progressHolder.progress/inputFileCount)+" % ) ...");
+              Log.d(TAG, "--- progress ( "+String.valueOf(progressHolder.progress)+" % )"+" / Total: ( "+String.valueOf(progressTotal+progressHolder.progress/inputFileCount)+" % ) ...");
               WritableMap params = Arguments.createMap();
               params.putInt("progress", progressTotal+progressHolder.progress/inputFileCount);
               sendEvent( "onCompressProgress", params);

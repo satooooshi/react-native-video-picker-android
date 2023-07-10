@@ -26,10 +26,6 @@ const VideoPickerAndroidEventEmitter = new NativeEventEmitter(
   NativeModules.VideoPickerAndroid
 );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return VideoPickerAndroid.multiply(a, b);
-}
-
 export function clean(): Promise<void> {
   return VideoPickerAndroid.clean();
 }

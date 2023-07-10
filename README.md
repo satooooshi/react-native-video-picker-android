@@ -23,6 +23,12 @@ const uris: string[] = await pickVideo({
 });
 ```
 
+## Run Example Project
+
+```sh
+yarn example android
+```
+
 ## Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.

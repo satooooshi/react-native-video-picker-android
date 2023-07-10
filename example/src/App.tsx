@@ -1,27 +1,16 @@
 import * as React from 'react';
-
 import { StyleSheet, View, Text, Button } from 'react-native';
-import { pickVideo } from 'react-native-video-picker-android';
+import { pickVideo, clean } from 'react-native-video-picker-android';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
-
-  React.useEffect(() => {
-    // multiply(3, 7).then(setResult);
-  }, []);
 
   return (
     <View style={styles.container}>
       <Button
         title="choose video"
         onPress={async () => {
-          // await multiply(3, new Date().getTime()).then((res) => {
-          //   console.log(res);
-          // });
-
           try {
-            // const aa = await clean();
-            // console.log(aa);
             const uris = await pickVideo({
               maxFiles: 10,
               compress: true,
@@ -34,6 +23,17 @@ export default function App() {
             console.log('---- pickVideo() success ', uris);
           } catch (err) {
             console.log('---- pickVideo() error ', err, (err as any)?.code);
+          }
+        }}
+      />
+      <Button
+        title="clean"
+        onPress={async () => {
+          try {
+            await clean();
+            console.log('---- clean() success ');
+          } catch (err) {
+            console.log('---- clean() error ', err, (err as any)?.code);
           }
         }}
       />
