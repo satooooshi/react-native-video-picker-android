@@ -11,16 +11,37 @@ yarn add react-native-video-picker-android
 
 ## Usage
 
-```ts
-const { pickVideo } = require('react-native-video-picker-android');
-const uris: string[] = await pickVideo({
-  maxFiles: 1,
-  compress: true,
-  multiple: false,
-  onProgress: (progress: number) => {
-    setProgCompressAndroid(progress);
+```js
+// react-native.config.js
+module.exports = {
+  dependencies: {
+    'react-native-video-picker-android': {
+      platforms: {
+        ios: null,
+      },
+    },
   },
-});
+};
+```
+
+```ts
+import { pickVideo } from 'react-native-video-picker-android';
+// ...
+try {
+  const uris = await pickVideo({
+    maxFileSize: 300 * 1000000,
+    lowerBoundForCompress: 5 * 1000000,
+    compress: true,
+    multiple: false,
+    onProgress: (progress) => {
+      console.log(progress);
+      setResult(progress);
+    },
+  });
+  console.log('---- pickVideo() success ', uris);
+} catch (err) {
+  console.log('---- pickVideo() error ', err, (err as any)?.code);
+}
 ```
 
 ## Run Example Project

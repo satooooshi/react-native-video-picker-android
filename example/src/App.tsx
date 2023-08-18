@@ -12,8 +12,8 @@ export default function App() {
         onPress={async () => {
           try {
             const uris = await pickVideo({
-              maxFiles: 10,
-              maxFileSize: 700 * 1000000,
+              maxFileSize: 300 * 1000000,
+              lowerBoundForCompress: 5 * 1000000,
               compress: true,
               multiple: false,
               onProgress: (progress) => {

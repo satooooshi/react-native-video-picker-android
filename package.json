@@ -1,6 +1,6 @@
 {
   "name": "react-native-video-picker-android",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "description": "A React Native package that allows you to select single or multiple videos from Android device library with support for compression.  A common use case is to compress videos and optimize the file size before uploading them to the server.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

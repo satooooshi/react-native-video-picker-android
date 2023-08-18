@@ -110,6 +110,7 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
   private static final String E_ERROR_WHILE_CLEANING_FILES = "E_ERROR_WHILE_CLEANING_FILES";
   private static final String E_VIDEO_SIZE_TOO_BIG = "E_VIDEO_SIZE_TOO_BIG";
   private static final String E_COMPRESS_CANCELLED = "E_COMPRESS_CANCELLED";
+  private static final String E_EXCEEDS_MAX_NUM_OF_FILES = "E_EXCEEDS_MAX_NUM_OF_FILES";
 
   private Promise mPickerPromise;
 
@@ -124,6 +125,8 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
   private boolean compress;
   private int maxFiles;
   private int maxFileSize;
+
+  private int lowerBoundForCompress;
   private ReadableMap options;
 
   public VideoPickerAndroidModule(ReactApplicationContext reactContext) {
@@ -138,12 +141,12 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
 //                           mPickerPromise.reject(E_PICKER_CANCELLED, "Image picker was cancelled");
 //                       } else
             if (resultCode == Activity.RESULT_OK) {
-              Uri data = intent.getData();
-              ClipData clipData = intent.getClipData();
-              System.out.println("--- intente get data");
-              System.out.println(intent);
-              System.out.println(data);
-              System.out.println(clipData);
+//              Uri data = intent.getData();
+//              ClipData clipData = intent.getClipData();
+//              System.out.println("--- intente get data");
+//              System.out.println(intent);
+//              System.out.println(data);
+//              System.out.println(clipData);
               List<Uri> inputUris = new ArrayList<>();
               if (intent.getData() == null) { // ユーザーが複数のアイテムを選択した場合、getData() は null を返します。
                 if (intent.getClipData() == null) {
@@ -151,7 +154,7 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
                   return ;
                 }
                 if (maxFiles > 0 && intent.getClipData().getItemCount() > maxFiles) {
-                  mPickerPromise.reject(E_NO_IMAGE_DATA_FOUND, "Can choose max "+maxFiles+" videos.");
+                  mPickerPromise.reject(E_EXCEEDS_MAX_NUM_OF_FILES, "Can choose at most "+maxFiles+" videos.");
                   return ;
                 }
                 for (int i = 0; i < intent.getClipData().getItemCount(); i++) {
@@ -162,6 +165,8 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
                 Uri uri = intent.getData();
                 inputUris.add(uri);
               }
+
+              boolean willCompress = false;
               if ( maxFileSize > 0 ) {
                 for (int i = 0; i < inputUris.size(); i++) {
                   Uri returnUri = inputUris.get(i);
@@ -170,13 +175,18 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
                   int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
                   int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
                   returnCursor.moveToFirst();
-                  Log.d(TAG, "--- nameIndex: " + returnCursor.getString(nameIndex)+", sizeIndex: "+Long.toString(returnCursor.getLong(sizeIndex)) );
+                  Log.d(TAG, "--- nameIndex: " + returnCursor.getString(nameIndex)+", sizeIndex: "+Long.toString(returnCursor.getLong(sizeIndex))+", maxFileSize: "+maxFileSize);
                   if ( returnCursor.getLong(sizeIndex) > maxFileSize) {
                     mPickerPromise.reject(E_VIDEO_SIZE_TOO_BIG, "Selected video size too big. " + " nameIndex: " + returnCursor.getString(nameIndex)+", sizeIndex: "+Long.toString(returnCursor.getLong(sizeIndex)));
+                    return;
                   }
+                  if(i == 0 && returnCursor.getLong(sizeIndex) > lowerBoundForCompress){
+                    willCompress = true;
+                  }
+
                 }
               }
-              if(compress){
+              if(compress && inputUris.size() < 2 && willCompress){
                 startTransformation(inputUris);
               }else{
                 WritableArray uris = Arguments.createArray();
@@ -202,8 +212,9 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
     }
 
     private void setConfiguration(final ReadableMap options) {
-      compress = options.hasKey("compress") ? options.getBoolean("compress"):false;
       multiple = options.hasKey("multiple") ? options.getBoolean("multiple"):false;
+      compress = options.hasKey("compress") ? options.getBoolean("compress"):false;
+      lowerBoundForCompress = options.hasKey("lowerBoundForCompress") ? options.getInt("lowerBoundForCompress") : 0;
       maxFiles = options.hasKey("maxFiles") ? options.getInt("maxFiles") : 0;
       maxFileSize = options.hasKey("maxFileSize") ? options.getInt("maxFileSize") : 0;
       this.options = options;
@@ -307,14 +318,15 @@ public class VideoPickerAndroidModule extends ReactContextBaseJavaModule {
       try {
         String tmpDir = activity.getCacheDir()+ "/"  + TAG;
           File file = new File(tmpDir);
-          if (!file.exists()) throw new Exception("File does not exist");
+          if (!file.exists())  {
+            promise.resolve(null); // throw new Exception("File does not exist");
+          }
           Log.d(TAG, "--- clean tmpDir: " + tmpDir + ", path: " + file.getAbsolutePath());
           module.deleteRecursive(file);
           promise.resolve(null);
       } catch (Exception ex) {
           // ex.printStackTrace();
-          // promise.reject(E_ERROR_WHILE_CLEANING_FILES, ex.getMessage());
-          promise.resolve(null);// on [Error: File does not exist]
+           promise.reject(E_ERROR_WHILE_CLEANING_FILES, ex.getMessage());
       }
   }
 
