@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, Button } from 'react-native';
 import { pickVideo, clean } from 'react-native-video-picker-android';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [progress, setProgress] = React.useState<number | undefined>();
 
   return (
     <View style={styles.container}>
@@ -11,15 +11,16 @@ export default function App() {
         title="choose video"
         onPress={async () => {
           try {
-            const uris = await pickVideo({
-              maxFileSize: 300 * 1000000,
-              lowerBoundForCompress: 5 * 1000000,
-              compress: true,
+            const uris: string[] = await pickVideo({
+              maxFileSize: 1024 * 1000000,
               multiple: false,
-              onProgress: (progress) => {
-                console.log(progress);
-                setResult(progress);
+              compress: true,
+              onProgress: (prog) => {
+                setProgress(prog);
               },
+              quality: 'high',
+              lowerBoundForCompress: 70 * 1000000,
+              duration: 300,
             });
             console.log('---- pickVideo() success ', uris);
           } catch (err) {
@@ -38,7 +39,9 @@ export default function App() {
           }
         }}
       />
-      <Text style={styles.box}>{result ? `Progress: ${result} %...` : ''}</Text>
+      <Text style={styles.box}>
+        {progress ? `Progress: ${progress} %...` : ''}
+      </Text>
     </View>
   );
 }
