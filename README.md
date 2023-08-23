@@ -28,15 +28,16 @@ module.exports = {
 import { pickVideo } from 'react-native-video-picker-android';
 // ...
 try {
-  const uris = await pickVideo({
-    maxFileSize: 300 * 1000000,
-    lowerBoundForCompress: 5 * 1000000,
-    compress: true,
+  const uris: string[] = await pickVideo({
+    maxFileSize: 1024 * 1000000,
     multiple: false,
-    onProgress: (progress) => {
-      console.log(progress);
-      setResult(progress);
+    compress: true,
+    onProgress: (prog) => {
+      setProgress(prog);
     },
+    quality: 'high',
+    lowerBoundForCompress: 70 * 1000000,
+    duration: 300,
   });
   console.log('---- pickVideo() success ', uris);
 } catch (err) {
